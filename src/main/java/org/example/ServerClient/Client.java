@@ -1,7 +1,9 @@
 package org.example.ServerClient;
 
+import org.example.ServerClient.Server;
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 
 public class Client {
     private static final String SERVER_ADDRESS = "localhost"; // or enter the IP address of the server here
@@ -19,10 +21,20 @@ public class Client {
             // send/receive data to/from the server
             while (true) {
                 // read user input
+                Scanner scanner = new Scanner(System.in);
+                System.out.print("Enter a message: ");
+                String userInput = scanner.nextLine();
+
                 // send input to server
+                out.println(userInput);
+
                 // read response from server
+                String response = in.readLine();
+
                 // display response to user
+                System.out.println("Server response: " + response);
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }

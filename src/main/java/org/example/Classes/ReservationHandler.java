@@ -51,7 +51,6 @@ public class ReservationHandler {
         return false;
     }
 
-
     public synchronized boolean cancelReservation(Reservation reservation) {
         while (!isReservationMade) {
             try {

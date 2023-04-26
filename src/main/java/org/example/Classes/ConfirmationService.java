@@ -14,6 +14,8 @@ import static org.example.Classes.Reservation.ApprovalStatus.*;
 
 
 public class ConfirmationService {
+
+    private static ReservationHandler resHandler;
     public void sendConfirmationEmail(String guestEmail, Reservation reservation) {
         // Implementation to send email to the guest with confirmation details
         // This can be done using any email service provider or library
@@ -55,8 +57,10 @@ public class ConfirmationService {
             e.printStackTrace();
         }
     }
-
-    public void confirmReservation(Reservation reservation) {
+    public void confirmReservation(Reservation reservation){
+        resHandler.confirmReservation(reservation);
+    }
+    /*public void confirmReservation(Reservation reservation) {
         // send confirmation email to guest
         try {
             Properties properties = new Properties();
@@ -93,6 +97,6 @@ public class ConfirmationService {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }
 

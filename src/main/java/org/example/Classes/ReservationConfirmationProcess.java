@@ -36,7 +36,7 @@ public class ReservationConfirmationProcess implements Runnable {
                 Reservation reservation = reservationQueue.poll();
                 if (reservation != null) {
                     Room room = getRoomById(reservation.getRoomType().getId());
-                    if (room != null && !room.isBooked()) {
+                    if (room != null && room.isBooked()) {
                         room.setBooked(true);
                         bookedRooms.add(room);
                         confirmationService.confirmReservation(reservation);

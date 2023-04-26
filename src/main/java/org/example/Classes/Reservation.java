@@ -128,16 +128,16 @@ public class Reservation {
         return this.room;
     }
 
-    public synchronized boolean confirmReservation() {
-        while (reservationStatus != ReservationStatus.CONFIRMED) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        return true;
-    }
+//    public synchronized boolean confirmReservation() {
+//        while (reservationStatus != ReservationStatus.CONFIRMED) {
+//            try {
+//                wait();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return true;
+//    }
 
     public synchronized void setReservationStatus(ReservationStatus reservationStatus) {
         this.reservationStatus = reservationStatus;
