@@ -27,12 +27,17 @@
         <dependency>
             <groupId>com.stripe</groupId>
             <artifactId>stripe-java</artifactId>
-            <version>20.63.0</version>
+            <version>22.13.0</version>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
             <version>1.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>hudson.queueSorter</groupId>
+            <artifactId>PrioritySorter</artifactId>
+            <version>1.1</version>
         </dependency>
 
     </dependencies>

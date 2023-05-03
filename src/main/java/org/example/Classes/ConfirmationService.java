@@ -41,7 +41,7 @@ public class ConfirmationService {
             message.setFrom(new InternetAddress("email@example.com"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(guestEmail));
             message.setSubject("Reservation Confirmation");
-            message.setText("Dear " + reservation.getGuest().getName() + ",\n\n" +
+            message.setText("Dear " + reservation.getGuestName() + ",\n\n" +
                     "Thank you for making a reservation at our hotel. " +
                     "Your reservation details are as follows:\n\n" +
                     "Room Number: " + reservation.getRoomNumber() + "\n" +

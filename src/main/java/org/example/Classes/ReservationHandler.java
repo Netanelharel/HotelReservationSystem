@@ -38,7 +38,7 @@ public class ReservationHandler {
 
         // check if an available room was found and make the reservation if so
         if (room != null) {
-            Reservation reservation = new Reservation(roomType.getId(), hotel.getId(), roomList, checkinDate, checkoutDate, numOfGuests);
+            Reservation reservation = new Reservation(hotel.getId(), roomList, checkinDate, checkoutDate, numOfGuests);
             boolean isConfirmed = hotel.confirmReservation(reservation);
             if (isConfirmed) {
                 reservationList.add(reservation);
@@ -71,7 +71,7 @@ public class ReservationHandler {
         return false;
     }
 
-    public synchronized boolean checkRoomAvailability(Room room, Date checkinDate, Date checkoutDate) {
+    public synchronized boolean checkRoomAvailability(RoomType.numOfGuestInRoom numOfGuests, Date checkinDate, Date checkoutDate) {
         while (isReservationMade) {
             try {
                 wait();
@@ -79,7 +79,7 @@ public class ReservationHandler {
                 e.printStackTrace();
             }
         }
-
+        Room room = new Room();
         boolean isAvailable = hotel.isRoomAvailable(room, checkinDate, checkoutDate);
         notifyAll();
         return isAvailable;
@@ -107,7 +107,7 @@ public class ReservationHandler {
         return false;
     }
 
-    public synchronized List<Reservation> getReservations() {
+    public synchronized List<Reservation> getAllReservations() {
         while (isReservationMade) {
             try {
                 wait();
@@ -117,5 +117,47 @@ public class ReservationHandler {
         }
 
         return reservationList;
+    }
+
+    public int findReservationNumber(String guestName, String roomType, int numGuests) {
+        int orderNumber = 0;
+        List<Reservation> reservations = searchReservations(guestName, roomType, numGuests);
+        if (reservations.isEmpty()) {
+            return -1;
+        }
+        orderNumber = reservations.get(0).getId();
+        return orderNumber;
+    }
+
+    private List<Reservation> searchReservations(String guestName, String roomType, int numGuests) {
+        List<Reservation> reservations = new ArrayList<>();
+        for (Reservation reservation : getAllReservations()) {
+            if (reservation.getGuestName().equals(guestName) &&
+                    reservation.getRoomType().equals(roomType) &&
+                    reservation.getNumOfGuests() == numGuests) {
+                reservations.add(reservation);
+            }
+        }
+        return reservations;
+    }
+
+    public synchronized boolean cancelReservation(int orderNumber) {
+        Reservation reservation = getReservationByID(orderNumber);
+        if(reservation == null)
+            return false;
+        resStat = reservation.getStatus();
+        if(resStat != resStat.CANCELLED){
+            reservation.cancelReservation();
+            return true;
+        }
+        return false;
+    }
+
+    public Reservation getReservationByID(int orderNumber) {
+        for (Reservation res : getAllReservations()) {
+            if (res.getId() == orderNumber)
+                return res;
+        }
+        return null;
     }
 }

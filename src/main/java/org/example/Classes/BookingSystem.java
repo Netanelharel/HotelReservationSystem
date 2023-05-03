@@ -1,13 +1,21 @@
 package org.example.Classes;
 
 import org.example.ServerClient.*;
-import java.util.ArrayList;
+import org.example.Classes.RoomType.numOfGuestInRoom;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class BookingSystem {
     private List<Room> rooms;
     private List<Reservation> reservations;
+    private static ReservationHandler resHand;
+
 
     public BookingSystem() {
         this.rooms = new ArrayList<>();
@@ -50,19 +58,41 @@ public class BookingSystem {
         return this.reservations;
     }
 
-    public static void main(String[] args) {
-        Hotel hotel = new Hotel();
-        Server server = new Server(hotel);
-        Thread serverThread = new Thread(server);
-        serverThread.start();
+    public int getReservationNumber(String guestName, String roomType, int numGuests) {
+        int reservationNumber = resHand.findReservationNumber(guestName, roomType, numGuests);
+        return reservationNumber;
+    }
+    public boolean cancelReservationByOrderNumber(int orderNumber){
+        boolean isCanceled = resHand.cancelReservation(orderNumber);
+        if (isCanceled){
+            return true;
+        }
+        return false;
+    }
+//    public b{}
+    public static void main(String[] args) throws IOException {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("enter the name of the hotel you want to do a reservation: ");
+        String hotelName = scan.next();
+//        resHand = new ReservationHandler(hotelName);
 
-        Client client1 = new Client("Client 1", hotel);
-        Client client2 = new Client("Client 2", hotel);
+        Hotel hotel = new Hotel(hotelName);
+        resHand = new ReservationHandler(hotel);
+//        Server server = new Server();
+//        Thread serverThread = new Thread();
+//        serverThread.start();
 
-        client1.checkRoomAvailability(RoomType.SINGLE, LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 3));
-        client1.makeReservation(RoomType.SINGLE, LocalDate.of(2023, 5, 1), LocalDate.of(2023, 5, 3), "John Doe");
-        client2.checkRoomAvailability(RoomType.DOUBLE, LocalDate.of(2023, 5, 10), LocalDate.of(2023, 5, 15));
-        client2.makeReservation(RoomType.DOUBLE, LocalDate.of(2023, 5, 10), LocalDate.of(2023, 5, 15), "Jane Doe");
+        System.out.println("enter the num of the guest for this reservation: ");
+        int numGuests = scan.nextInt();
+//        Client client1 = new Client("Client 1", hotel);
+//        Client client2 = new Client("Client 2", hotel);
+        RoomType roomType;  //numOfGuestInRoom.DOUBLE; // Get the corresponding RoomType from the enum
+        Date checkInDate = Date.from(LocalDate.of(2023, 5, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()); // Create a Date object for the check-in date
+        Date checkOutDate = Date.from(LocalDate.of(2023, 5, 10).atStartOfDay(ZoneId.systemDefault()).toInstant()); // Create a Date object for the check-out date
+        resHand.checkRoomAvailability(numOfGuestInRoom.SINGLE, checkInDate, checkOutDate);
+        resHand.makeReservation(RoomType.fromNumOfGuests("SINGLE"), checkInDate, checkOutDate, numGuests);
+//        resHand.checkRoomAvailability(numOfGuestInRoom.DOUBLE,checkInDate,checkOutDate);
+//        resHand.makeReservation(RoomType.fromNumOfGuests("DOUBLE"),checkInDate,checkOutDate, numGuests);
 
         try {
             Thread.sleep(5000); // wait for all requests to be processed
@@ -70,7 +100,7 @@ public class BookingSystem {
             e.printStackTrace();
         }
 
-        server.stopServer();
+//        server.stopServer();
     }
 }
 

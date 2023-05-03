@@ -10,11 +10,12 @@ public class Hotel {
     private String location;
     private List<Room> rooms;
     private List<Reservation> reservations;
+    private int lastHotel = 0;
 
-    public Hotel(int id, String name, String location) {
-        this.id = id;
+    public Hotel(String name) {
+        this.id = lastHotel + 1;
         this.name = name;
-        this.location = location;
+        this.location = new String();
         this.rooms = new ArrayList<>();
         this.reservations = new ArrayList<>();
     }

@@ -1,13 +1,12 @@
 package org.example.ServerClient;
 
-import org.example.ServerClient.Server;
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
 public class Client {
     private static final String SERVER_ADDRESS = "localhost"; // or enter the IP address of the server here
-    private static final int PORT = 1234; // enter the port number of the server here
+    private static final int PORT = 8000; // enter the port number of the server here
 
     public static void main(String[] args) {
         try {

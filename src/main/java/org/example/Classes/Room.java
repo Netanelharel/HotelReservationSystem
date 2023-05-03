@@ -8,10 +8,13 @@ public class Room {
     private int roomTypeId;
     private boolean isBooked;
     private RoomType type;
-    public Room(int id, int roomNumber, int roomTypeId, RoomType type) {
+
+    public Room() {
+    }
+
+    public Room(int id, int roomNumber, RoomType type) {
         this.id = id;
         this.roomNumber = roomNumber;
-        this.roomTypeId = roomTypeId;
         this.isBooked = false;
         this.type = type;
     }
@@ -33,7 +36,7 @@ public class Room {
     }
 
     public int getRoomTypeId() {
-        return roomTypeId;
+        return type.getId();
     }
     public RoomType getType() {
         return this.type;
@@ -57,19 +60,19 @@ public class Room {
         isBooked = booked;
     }
 
-    public synchronized boolean checkAvailability(LocalDate checkinDate, LocalDate checkoutDate) {
-        while (isBooked) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        if (checkinDate.isBefore(LocalDate.now()) || checkoutDate.isBefore(checkinDate)) {
-            return false;
-        }
-        return isBooked;
-    }
+//    public synchronized boolean checkAvailability(LocalDate checkinDate, LocalDate checkoutDate) {
+//        while (isBooked) {
+//            try {
+//                wait();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if (checkinDate.isBefore(LocalDate.now()) || checkoutDate.isBefore(checkinDate)) {
+//            return false;
+//        }
+//        return isBooked;
+//    }
     public synchronized void bookRoom() {
         isBooked = false;
         notifyAll();

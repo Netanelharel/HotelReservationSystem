@@ -6,12 +6,11 @@ import java.util.List;
 
 public class Reservation {
     private int id;
-    private int roomTypeId;
+//    private int roomTypeId;
     private int hotelId;
     private Date checkInDate;
     private Date checkOutDate;
     private int numOfGuests;
-    private ReservationStatus status;
     private int lastReservation = 0;
 
     public enum ApprovalStatus {
@@ -22,25 +21,25 @@ public class Reservation {
     public enum ReservationStatus {
         PENDING,
         CONFIRMED,
-        CANCELLED,
-        COMPLETED
+        COMPLETED,
+        CANCELLED
     }
-
     private ApprovalStatus isConfirmed = ApprovalStatus.NOT_CONFIRMED;
+    private ReservationStatus status = ReservationStatus.COMPLETED;
     private List<Room> rooms;
     private Room room;
     private Guest guest;
     private RoomType roomType;
     private ReservationStatus reservationStatus;
 
-    public Reservation(int roomTypeId, int hotelId, List<Room> rooms, Date checkInDate, Date checkOutDate, int numOfGuests) {
+    public Reservation(int hotelId, List<Room> rooms, Date checkInDate, Date checkOutDate, int numOfGuests) {
         this.id = lastReservation + 1;
-        this.roomTypeId = roomTypeId;
         this.hotelId = hotelId;
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.numOfGuests = numOfGuests;
         this.isConfirmed = ApprovalStatus.NOT_CONFIRMED;
+        this.status = ReservationStatus.PENDING;
         this.rooms = rooms;
     }
 
@@ -60,9 +59,9 @@ public class Reservation {
         return roomType;
     }
 
-    public void setRoomTypeId(int roomTypeId) {
-        this.roomTypeId = roomTypeId;
-    }
+//    public void setRoomTypeId(int roomTypeId) {
+//        this.roomTypeId = roomTypeId;
+//    }
 
     public int getHotelId() {
         return hotelId;
@@ -104,10 +103,6 @@ public class Reservation {
         isConfirmed = ApprovalStatus.CONFIRMED;
     }
 
-//    public String getGuestName(){
-//        return Guest.class.getName();
-//    }
-
     public ReservationStatus getStatus() {
         return status;
     }
@@ -116,8 +111,8 @@ public class Reservation {
         this.status = status;
     }
 
-    public Guest getGuest() {
-        return guest;
+    public String getGuestName() {
+        return guest.getName();
     }
 
     public int getRoomNumber() {
@@ -128,7 +123,7 @@ public class Reservation {
         return this.room;
     }
 
-//    public synchronized boolean confirmReservation() {
+    //    public synchronized boolean confirmReservation() {
 //        while (reservationStatus != ReservationStatus.CONFIRMED) {
 //            try {
 //                wait();
@@ -145,7 +140,7 @@ public class Reservation {
     }
 
     public void cancelReservation() {
-        this.isConfirmed = ApprovalStatus.CONFIRMED;
+        this.status = ReservationStatus.CANCELLED;
         this.room.setBooked(false); // set the associated room as available
     }
 }
