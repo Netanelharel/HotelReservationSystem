@@ -15,12 +15,20 @@ public class BookingSystem {
     private List<Room> rooms;
     private List<Reservation> reservations;
     private static ReservationHandler resHand;
+    private static BookingSystem instance;
 
-
+    public static BookingSystem getInstance() {
+        if (instance == null) {
+            instance = new BookingSystem();
+        }
+        return instance;
+    }
     public BookingSystem() {
         this.rooms = new ArrayList<>();
         this.reservations = new ArrayList<>();
     }
+
+    private static ArrayList<Guest> guests = new ArrayList<Guest>();
 
     public void addRoom(Room room) {
         this.rooms.add(room);
@@ -32,6 +40,10 @@ public class BookingSystem {
 
     public List<Room> getRooms() {
         return this.rooms;
+    }
+
+    public List<Guest> getGuests(){
+        return guests;
     }
 
     /*public boolean isRoomAvailable(Room room, Date checkinDate, Date checkoutDate) {
@@ -62,14 +74,55 @@ public class BookingSystem {
         int reservationNumber = resHand.findReservationNumber(guestName, roomType, numGuests);
         return reservationNumber;
     }
-    public boolean cancelReservationByOrderNumber(int orderNumber){
+
+    public boolean cancelReservationByOrderNumber(int orderNumber) {
         boolean isCanceled = resHand.cancelReservation(orderNumber);
-        if (isCanceled){
+        if (isCanceled) {
             return true;
         }
         return false;
     }
 //    public b{}
+
+    /**
+     * Checks if a Guest with the given name exists in the Guest list.
+     *
+     * @param name The ID of the Guest to check.
+     * @return True if a Guest with the given ID exists in the Guest list, false otherwise.
+     */
+    public boolean isGuestNameExist(String name) {
+        for (Guest guest : guests) {
+            if (guest.getName() == name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<Reservation> getGuestReservations(String guestName) {
+        for (Reservation r : reservations) {
+            if (r.getGuestName().equals(guestName)) {
+                reservations.add(r);
+                break;
+            }
+        }
+        return reservations;
+    }
+
+    public List<Hotel> getHotels() {
+        List<Hotel> hotels = new ArrayList<>();
+        for (Reservation reservation : reservations) {
+            Room room = reservation.getRoom();
+            if(room != null) {
+                Hotel hotel = room.getHotel();
+                if (hotel != null && !hotels.contains(hotel)) {
+                    hotels.add(hotel);
+                }
+            }
+        }
+        return hotels;
+    }
+
     public static void main(String[] args) throws IOException {
         Scanner scan = new Scanner(System.in);
         System.out.println("enter the name of the hotel you want to do a reservation: ");

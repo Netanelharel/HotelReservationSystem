@@ -1,6 +1,8 @@
 package org.example.Classes;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Room {
     private int id;
@@ -8,7 +10,8 @@ public class Room {
     private int roomTypeId;
     private boolean isBooked;
     private RoomType type;
-
+    List<Hotel> hotels = new ArrayList<>();
+    private Hotel hotel;
     public Room() {
     }
 
@@ -58,6 +61,16 @@ public class Room {
 
     public void setBooked(boolean booked) {
         isBooked = booked;
+    }
+
+    public Hotel getHotel() {
+//        for (Hotel hotel : hotels) {
+//            if (hotel.getRooms().contains(room)) {
+//                return hotel;
+//            }
+//        }
+//        return null;
+        return this.hotel;
     }
 
 //    public synchronized boolean checkAvailability(LocalDate checkinDate, LocalDate checkoutDate) {

@@ -1,273 +1,236 @@
-//package org.example.ServerClient;
-//
-//import com.stripe.model.Account;
-//
-//import javax.swing.*;
-//import java.io.DataInputStream;
-//import java.io.DataOutputStream;
-//import java.io.IOException;
-//import java.net.Socket;
-//
-////import java.net.Socket;
-////import java.io.IOException;
-////import java.io.ObjectInputStream;
-////import java.io.ObjectOutputStream;
-////import java.util.Date;
-////
-////import com.sun.mail.iap.Response;
-////import org.example.Classes.*;
-//public class ClientHandler extends Thread {
-//    private Socket socket;
-//    private DataInputStream dataFromClient;
-//    private DataOutputStream dataToClient;
-//    private int request = 0;
-//
-//    /* request is a variable to indicate what the client wants to do.
-//     * client sends a number:
-//     * 0 - account number set - default
-//     * 1 - withdraw
-//     * 2 - deposit
-//     * 3 - balance check
-//     */
-//
-//    public ClientHandler(Socket socket) {
-//        this.socket = socket;
-//    }
-//
-//    public void run() {
+package org.example.ServerClient;
+
+import org.example.Classes.*;
+
+import java.io.*;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+/**
+ * A class representing a thread that handles communication with a single client in a client-server application.
+ * The class implements the Runnable interface to allow it to run in a separate thread.
+ */
+public class ClientHandler implements Runnable {
+    private Socket socket; // A connected socket for communication with the client
+    private ObjectInputStream dataFromClient; //An object input stream for reading data from the client
+    private ObjectOutputStream dataToClient; //An object output stream for sending data to the client.
+    private int request = 0; //An integer representing the client's request.
+
+    /**
+     * Constructs a new HandleAClient object with the given socket.
+     *
+     * @param socket A connected socket for communication with the client.
+     */
+    public ClientHandler(Socket socket) {
+        this.socket = socket;
+    }
+
+    /**
+     * The main method that runs in a separate thread to handle communication with the client.
+     * The method uses a switch statement to determine the client's request and respond accordingly.
+     * The method also calls other methods to perform specific tasks, such as showing available lessons,
+     * ordering a new lesson or cancelling a lesson.
+     */
+    @Override
+    public void run() {
+        try {
+            String guestName = "";
+            Room room;
+            dataToClient = new ObjectOutputStream(socket.getOutputStream());
+            dataFromClient = new ObjectInputStream(socket.getInputStream());
+            while (true) {
+                var x = dataFromClient.readObject();
+                request = (int) x;
+                switch (request) {
+                    case 0: //login
+                        System.out.println("\nEntered account login action!\n");
+                        guestName = (String) dataFromClient.readObject();
+                        if (checkId(guestName)) {
+                            dataToClient.writeObject("Guest found!");
+                        } else {
+                            dataToClient.writeObject("Guest not found! try again.");
+                        }
+                        break;
+                    case 1: //order a new room
+                        showAvailableRooms();
+                        int roomId = (int) dataFromClient.readObject();
+                        int res = orderARoom(guestName, roomId);
+                        dataToClient.writeObject(res);
+                        break;
+                    case 2: //see your reservations
+                        List<Reservation> myReservations = showClientReservations(guestName);
+                        dataToClient.writeObject(myReservations);
+                        break;
+                    case 3: //cancel a reservation
+                        List<Reservation> clientReservations = showClientReservations(guestName);
+                        dataToClient.writeObject(clientReservations);
+                        int reservationNum = (int) dataFromClient.readObject();
+                        Reservation reservation = BookingSystem.getInstance().getGuestReservations(guestName)
+                                .get(reservationNum - 1);
+                        cancelRoom(guestName, reservation.getRoom());
+                        break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    //    public void run() {
 //        try {
-//            dataToClient = new DataOutputStream(socket.getOutputStream());
-//            dataFromClient = new DataOutputStream(socket.getInputStream());
-//
-//            double accountID = 0;
-//            double temp = 0;
-//            int w = 0;
-//
-//            /* Always serve client - receiving the number to indicate which
-//            action to do as stated above (below the request variable).
-//            * the *first* number the server receives from the client is what
-//            action to perform, then moves to a switch-case for each action.
-//            * most actions require an amount or a number from the client.
-//            */
+//            String temp = "";
+//            String guestName = "";
+//            dataToClient = new ObjectOutputStream(socket.getOutputStream());
+//            dataFromClient = new ObjectInputStream(socket.getInputStream());
 //            while (true) {
-//                request = (int) dataFromClient.readDouble();
+//                var x = dataFromClient.readObject();
+//                request = (int) x;
 //                switch (request) {
-//                    case 0:
+//                    case 0://login
 //                        System.out.println("\nEntered account login action!\n");
-//
-//                        temp = dataFromClient.readDouble();
-//                        if (CheckID(temp)) {
-//                            accountID = temp;
-//                            dataToClient.writeUTF("Account found!");
+//                        temp = (String) dataFromClient.readObject();
+//                        if (checkId(temp)) {
+//                            guestName = temp;
+//                            dataToClient.writeObject("Guest found!");
 //                        } else {
-//                            dataToClient.writeUTF("Account not found!  try again.");
+//                            dataToClient.writeObject("Guest not found! try again.");
 //                        }
 //                        break;
-//
-//                    case 1: //withdraw action
-//                        System.out.println("\nEntered withdraw action\n");
-//                        temp = dataFromClient.readDouble();
-//                        w = withdraw((int) accountID, temp);
-//                        if (w == 1) {
-//                            dataToClient.writeUTF("Wirhdrawn " + temp + "successfuly!");
-//                        } else if (w == -1)  // Not enough cash
-//
-//                        {
-//                            dataToClient.writeUTF("Not enough cash in the ATM, do you want to wait 30 seconds for a deposit? " +
-//                                    "\nType 1 for YES or 0 for NO and press enter");
-//                            temp = dataFromClient.readDouble();
-//                            if (temp == 1) {
-//                                synchronized (Server.cash) {
-//                                    Server.cash.wait(30000);// waits
-//                                }
-//                                dataToClient.writeUTF("Done waiting, please check your balance and try to withdraw. ");
-//                            } else {
-//                                dataToClient.writeUTF("Not waiting for deposit");
-//                            }
-//                        } else if (w == 2) // Not enough money in the account
-//                        {
-//                            dataToClient.writeUTF("Not enough cash in your account, do you want to wait 30 seconds for a deposit? " +
-//                                    "\nType 1 for YES or 0 for NO and press enter");
-//                            temp = dataFromClient.readDouble();
-//                            if (temp == 1) {
-//                                synchronized (Server.accounts) {
-//                                    Server.accounts.wait(30000); // waits
-//                                }
-//                                dataToClient.writeUTF("Done waiting, " +
-//                                        "please check your balance and try to withdraw.");
-//                            } else {
-//                                dataToClient.writeUTF("Not waiting for deposit. ");
-//                            }
-//                        } else //if any error occurs
-//                        {
-//                            dataToClient.writeUTF("Cannot withdraw, " +
-//                                    "please check your balance and try again!");
-//                        }
+//                    case 1://order a new room
+//                        showAvailableRooms();
+//                        int roomID = (int) dataFromClient.readObject();
+//                        int res = orderARoom(guestName, roomID);
+//                        dataToClient.writeObject(res);
+//                        break;
+//                    case 2://see your Reservation
+//                        String name = (String) dataFromClient.readObject();
+//                        List<Reservation> myList = showClientReservations(name);
+//                        dataToClient.writeObject(myList);
+//                        break;
+//                    case 3://cancel a room
+////                        int guestId = (int) dataFromClient.readObject();
+//                        String guestN= (String) dataFromClient.readObject();
+//                        List<Reservation> clientReservation = showClientReservations(guestN);
+//                        dataToClient.writeObject(clientReservation);
+//                        double lessonNum = (double) dataFromClient.readObject();
+//                        Reservation reservation = BookingSystem.getInstance().getGuestReservations()
+//                                .get(reservation - 1).getMyLessons().get((int) lessonNum - 1);
+//                        cancelRoom(guestN,reservation.getRoom());
+//                        //dataToClient.writeObject("cancel success");
 //                        break;
 //
-//                    case 2: // Deposit action
-//                        System.out.println("\nEntered deposit action!\n");
-//                        temp = dataFromClient.readDouble();
-//                        if (deposit((int) accountID, temp)) {
-//                            dataToClient.writeUTF("Deposited " + temp + "successfully !");
-//                        } else {
-//                            dataToClient.writeUTF("Cannot deposit, please" +
-//                                    "check your balance and try again !");
-//                        }
-//                        break;
-//
-//                    case 3: //Balance action
-//                        System.out.println("Entered balance!");
-//                        dataToClient.writeDouble(balance((int) accountID));
-//                        break;
 //                }
 //            }
-//        } catch (IOException e) {
-//            System.out.println("Disconnected");
 //        } catch (Exception ex) {
-////            ex.printStackTrace();
+//            ex.printStackTrace();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
 //        }
 //    }
-//
-//    /*
-//     * Functions used to perform different actions
-//     * (-1 after id because it starts from 0 in the arraylist but saved as 1 in the id)
-//     */
-//    // checkID function returns true if id is found within the accounts arraylist, or false if not .
-//
-//    private boolean checkID(double id) {
-//        for (Account a : Server.accounts) {
-//            if (a.getId() == (int) id)
-//                return true;
-//        }
-//        return false;
-//    }
-//
-//    // deposit function returns true when deposited the amount of money into account with given id.
-//    private boolean deposit(int id, double amount) {
-//        try {
-//            synchronized (Server.cash) {
-//                synchronized (Server.accounts) {
-//                    Server.accounts.get(id -
-//                            1).getBalance().addCash(amount);
-//                    Server.cash.addCash(amount);
-//                    Thread.sleep(2000); // To make the action take time
-//                    Server.accounts.notifyAll();
-//                    Server.cash.notifyAll();
-//                    return true;
-//                }
-//            }
-//        } catch (Exception e) {
-//            //e.printStackTrace();
-//        }
-//        return false;
-//    }
-//
-//    // withdraw function returns true if was able to withdraw given amount from account with given id, or false if not.
-//    private int withdraw(int id, double amount) {
-//        try {
-//            synchronized (Server.cash) {
-//                if (Server.cash.getCash() - amount >= 0) {
-//                    synchronized (Server.accounts) {
-//                        if (Server.accounts.get(id1).getBalance().getCash() - amount >= 0) {
-//                            Server.accounts.get(id -
-//                                    1).getBalance().remCash(amount);
-//                            Server.cash.remCash(amount);
-//                            Thread.sleep(2000); // To make the action
-//                            take time
-//                            return 1;
-//                        } else {
-//                            return -2;
-//                        }
-//                    }
-//                } else {
-//                    return -1;
-//                }
-//            }
-//        } catch (Exception e) {
-////e.printStackTrace();
-//        }
-//        return 0;
-//    }
-//
-//    // balance function returns a double which is the balance of the given account id.
-//    private double balance(int id) {
-//        try {
-//            synchronized (Server.accounts) {
-//                double balance = Server.accounts.get(id -
-//                        1).getBalance().getCash();
-//                Thread.sleep(4000); // To make the action take time
-//                return balance;
-//            }
-//        } catch (Exception e) {
-////e.printStackTrace();
-//        }
-//        return -1;
-//    }
-//}
-//
-//
-////
-////    private Socket socket;
-////    private ObjectInputStream input;
-////    private ObjectOutputStream output;
-////    private Hotel hotel;
-////
-////    public enum ResponseType {
-////        CHECK_ROOM_AVAILABILITY,
-////        MAKE_RESERVATION
-////    }
-////
-////    public ClientHandler(Socket socket, Hotel hotel) {
-////        this.socket = socket;
-////        this.hotel = hotel;
-////    }
-////
-////    @Override
-////    public void run() {
-////        try {
-////            input = new ObjectInputStream(socket.getInputStream());
-////            output = new ObjectOutputStream(socket.getOutputStream());
-////
-////            while (true) {
-////                Object obj = input.readObject();
-////                if (obj instanceof Request) {
-////                    Request request = (Request) obj;
-////                    Response response = processRequest(request);
-////                    output.writeObject(response);
-////                }
-////            }
-////        } catch (IOException | ClassNotFoundException e) {
-////            System.out.println("Error: " + e.getMessage());
-////        } finally {
-////            try {
-////                input.close();
-////                output.close();
-////                socket.close();
-////            } catch (IOException e) {
-////                System.out.println("Error: " + e.getMessage());
-////            }
-////        }
-////    }
-////
-////    private Response processRequest(Request request) {
-////        Response response = null;
-////        switch (request.getRequestType()) {
-////            case "CHECK_ROOM_AVAILABILITY":
-////                Room room = (Room) request.getRequestData();
-////                Date checkinDate = (Date) request.getRequestData();
-////                Date checkoutDate = (Date) request.getRequestData();
-////                boolean isAvailable = hotel.isRoomAvailable(room, checkinDate, checkoutDate);
-////                String responseType = ResponseType.CHECK_ROOM_AVAILABILITY.name();
-////                return new Response(responseType, isAvailable);
-////            case "MAKE_RESERVATION":
-////                Reservation reservation = (Reservation) request.getRequestData();
-////                boolean isConfirmed = hotel.confirmReservation(reservation);
-////                responseType = ResponseType.MAKE_RESERVATION.name();
-////                return new Response(responseType, isConfirmed);
-////            default:
-////                return null;
-////        }
-////    }
-////}
-////
+
+    /**
+     * Returns a list of the lessons for a given client.
+     *
+     * @param guestName The name of the client.
+     * @return A list of the client's lessons.
+     */
+    private List<Reservation> showClientReservations(String guestName) {
+        return BookingSystem.getInstance().getGuestReservations(guestName);
+    }
+
+    /**
+     * Sends a list of available lessons to the client.
+     *
+     * @throws IOException If an I/O error occurs.
+     */
+    private void showAvailableRooms() throws IOException {
+        Map<String, Integer> availableRoomsByHotel = new HashMap<>();
+        List<Hotel> hotels = BookingSystem.getInstance().getHotels();
+
+        for (Hotel hotel : hotels) {
+            int availableRooms = 0;
+            for (Room room : hotel.getRooms()) {
+                if (!room.isBooked()) {
+                    availableRooms++;
+                }
+            }
+            availableRoomsByHotel.put(hotel.getName(), availableRooms);
+        }
+        dataToClient.writeObject(availableRoomsByHotel);
+    }
+
+    /**
+     * Checks if the given Guest ID exists in the Guest list.
+     *
+     * @param name The Guest name to check for.
+     * @return True if the Guest ID exists, false otherwise.
+     */
+    public boolean checkId(String name) {
+        return BookingSystem.getInstance().isGuestNameExist(name);
+    }
+
+    /**
+     * Attempts to order a lesson for a Guest. If the lesson is not available,
+     * this method waits until it becomes available before attempting to order it again.
+     *
+     * @param guestName The name of the Guest ordering the room.
+     * @param roomId    The ID of the room being ordered.
+     * @return 1 if the lesson was successfully ordered, or 0 if an exception occurred.
+     */
+    public int orderARoom(String guestName, int roomId) {
+        Room room;
+        try {
+            synchronized (BookingSystem.getInstance().getRooms()) {
+                while (!BookingSystem.getInstance().getRooms().get(roomId - 1).isBooked()) {
+                    BookingSystem.getInstance().getRooms().wait(); // wait for lesson to become available
+                }
+                BookingSystem.getInstance().getRooms().get(roomId - 1).setBooked(false);
+                room = BookingSystem.getInstance().getRooms().get(roomId - 1);
+                BookingSystem.getInstance().getRooms().remove(BookingSystem.getInstance().getRooms().get(roomId - 1));
+            }
+            synchronized (BookingSystem.getInstance().getGuests()) {
+                for (Guest guest : BookingSystem.getInstance().getGuests()) {
+                    if (guest.getName().equals(guestName)) {
+                        guest.setOrderRooms(1, room);
+                        break;
+                    }
+                }
+            }
+            return 1;
+        } catch (Exception e) {
+            return 0;
+        } finally {
+            synchronized (BookingSystem.getInstance().getRooms()) {
+                BookingSystem.getInstance().getRooms().notifyAll(); // notify waiting threads that lesson is available
+            }
+        }
+    }
+
+    /**
+     * Cancels a lesson that was previously ordered by a Guest.
+     *
+     * @param guestName The name of the Guest who ordered the room.
+     * @param room      The room object representing the room that was ordered.
+     */
+    public void cancelRoom(String guestName, Room room) {
+        synchronized (BookingSystem.getInstance().getGuests()) {
+            for (Guest guest : BookingSystem.getInstance().getGuests()) {
+                if (guest.getName().equals(guestName)) {
+                    guest.setOrderRooms(0, room);
+                    break;
+                }
+            }
+        }
+        synchronized (BookingSystem.getInstance().getRooms()) {
+            room.setBooked(true);
+            BookingSystem.getInstance().getRooms().add(room);
+            //DataServer.getInstance().sortLessonList();
+        }
+    }
+
+}

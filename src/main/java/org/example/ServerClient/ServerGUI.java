@@ -42,10 +42,9 @@ public class ServerGUI extends JFrame {
     public ServerGUI() throws IOException {
         // Set up the GUI
         super("Hotel Reservation Server");
-        setLayout(new BorderLayout());
+//        setLayout(new BorderLayout());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 300);
-        setVisible(true);
 
         //Create a JTextArea for displaying server messages
         textArea = new JTextArea();
@@ -53,6 +52,7 @@ public class ServerGUI extends JFrame {
 
         //Display the server start time
         textArea.append("Hotel Reservation Server started at " + new Date() + '\n');
+        setVisible(true);
 
         // Create the booking system object
         bookingSystem = new BookingSystem();
@@ -60,19 +60,25 @@ public class ServerGUI extends JFrame {
         // Create a new server socket with the specified port number
         try {
             serverSocket = new ServerSocket(PORT);
-            serverSocket.setSoTimeout(500);
+            serverSocket.setSoTimeout(5000); // set timeout value to 5000 milliseconds (5 seconds)
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //Wait for incoming client connections
+
+        // Wait for incoming client connections
         while (true) {
             Socket clientSocket = null;
             try {
-                //Accept incoming client connections
+                // Accept incoming client connections
                 clientSocket = serverSocket.accept();
+            } catch (SocketTimeoutException e) {
+                // Handle socket timeout exception
+                textArea.append("Server socket timed out while waiting for client connections.\n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            // Handle incoming client connections
             if (clientSocket != null) {
                 // Display a message indicating a new client connection
                 //Display the client number
@@ -86,10 +92,78 @@ public class ServerGUI extends JFrame {
                 clientSocket = null;
             }
         }
+
+
+//        // Create a new server socket with the specified port number
+//        try {
+//            serverSocket = new ServerSocket(PORT);
+//            serverSocket.setSoTimeout(500);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        //Wait for incoming client connections
+//        while (true) {
+//            Socket clientSocket = null;
+//            try {
+//                //Accept incoming client connections
+//                clientSocket = serverSocket.accept();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            if (clientSocket != null) {
+//                // Display a message indicating a new client connection
+//                //Display the client number
+//                textArea.append("New connection from " + clientSocket.getInetAddress().getHostAddress() + " at " + new Date() + '\n');
+//
+//                // Display a message indicating a new client connection
+//                Thread task = new Thread(new ClientHandler(clientSocket, bookingSystem));
+//                task.start();
+//
+//                //Set the client socket to null to prevent the current connection from being processed again
+//                clientSocket = null;
+//            }
+//        }
+
+//        getContentPane().setLayout(new BorderLayout());
+//        textArea.setEditable(false);
+//        getContentPane().add(new JScrollPane(textArea),BorderLayout.CENTER);
+//        setTitle("MultiThreadServer");
+//        setSize(500,300);
+//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        setVisible(true);
+
+//        int clientNum = 1;
+//        try {
+//            serSocket = new ServerSocket(PORT);
+//            textArea.append("MultiThreadServer STARTED at " + new Date() +
+//                    ", Port: " + serSocket.getLocalPort() + "\n");
+//        }catch (IOException e1){
+//            textArea.append("MultiThreadServer could NOT start!");
+//            e1.printStackTrace();
+//        }
+//        while (true){
+//            try {
+////                socket = serSocket.accept();
+//            }catch (IOException e){
+//                e.printStackTrace();
+//            }
+//Display the client number
+//        textArea.append("Starting thread for client " + clientNum +
+//                " at " + new Date() + '\n');
+//        //Find the client's host ip address
+//        InetAddress address = socket.getInetAddress();
+//        textArea.append("Client " + clientNum + "'s IP Address is " +
+//                address.getHostAddress() + "\n");
+//        //create a new taskfor the connection
+//        Thread task = new Thread(new ClientHandler(socket));
+//        task.start();
+//        clientNum++;
+//        }
     }
 
     /**
      * function to stop the server from listening to incoming connections
+     *
      * @throws IOException
      */
     public void stopServer() throws IOException {

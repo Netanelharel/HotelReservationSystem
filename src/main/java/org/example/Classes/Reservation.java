@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Reservation {
     private int id;
-//    private int roomTypeId;
+    //    private int roomTypeId;
     private int hotelId;
     private Date checkInDate;
     private Date checkOutDate;
@@ -24,11 +24,13 @@ public class Reservation {
         COMPLETED,
         CANCELLED
     }
+
     private ApprovalStatus isConfirmed = ApprovalStatus.NOT_CONFIRMED;
     private ReservationStatus status = ReservationStatus.COMPLETED;
     private List<Room> rooms;
     private Room room;
     private Guest guest;
+    private Hotel hotel;
     private RoomType roomType;
     private ReservationStatus reservationStatus;
 
@@ -51,17 +53,9 @@ public class Reservation {
         this.id = id;
     }
 
-//    public int getRoomTypeId() {
-//      return roomTypeId;
-//    }
-
     public RoomType getRoomType() {
         return roomType;
     }
-
-//    public void setRoomTypeId(int roomTypeId) {
-//        this.roomTypeId = roomTypeId;
-//    }
 
     public int getHotelId() {
         return hotelId;
@@ -123,7 +117,15 @@ public class Reservation {
         return this.room;
     }
 
-    //    public synchronized boolean confirmReservation() {
+    public void cancelReservation() {
+        this.status = ReservationStatus.CANCELLED;
+        this.room.setBooked(false); // set the associated room as available
+    }
+    public synchronized void setReservationStatus(ReservationStatus reservationStatus) {
+        this.reservationStatus = reservationStatus;
+        notifyAll();
+    }
+//    public synchronized boolean confirmReservation() {
 //        while (reservationStatus != ReservationStatus.CONFIRMED) {
 //            try {
 //                wait();
@@ -133,14 +135,4 @@ public class Reservation {
 //        }
 //        return true;
 //    }
-
-    public synchronized void setReservationStatus(ReservationStatus reservationStatus) {
-        this.reservationStatus = reservationStatus;
-        notifyAll();
-    }
-
-    public void cancelReservation() {
-        this.status = ReservationStatus.CANCELLED;
-        this.room.setBooked(false); // set the associated room as available
-    }
 }
